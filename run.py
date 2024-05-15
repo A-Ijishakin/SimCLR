@@ -94,5 +94,5 @@ def main():
         simclr.train(train_loader)
 
 if __name__ == "__main__":
-    multiprocessing.set_start_method('spawn') 
+    # multiprocessing.set_start_method('spawn') 
     main()
