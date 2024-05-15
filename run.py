@@ -6,7 +6,7 @@ from data_aug.contrastive_learning_dataset import ContrastiveLearningDataset
 from models.resnet_simclr import ResNetSimCLR
 from simclr import SimCLR
 from datasets import CelebA_Dataset 
-
+import multiprocessing 
 
 
 model_names = sorted(name for name in models.__dict__
@@ -73,7 +73,13 @@ def main():
 
     
     train_loader = torch.utils.data.DataLoader(CelebA_Dataset(mode=0), batch_size=args.batch_size, shuffle=True,
-        num_workers=args.workers, pin_memory=True, drop_last=True)
+        pin_memory=True, drop_last=True, 
+        
+                        num_workers=8,         
+                        persistent_workers=True,
+                        prefetch_factor=4, 
+        
+        )
 
     model = ResNetSimCLR(base_model=args.arch, out_dim=args.out_dim)
 
@@ -88,4 +94,5 @@ def main():
         simclr.train(train_loader)
 
 if __name__ == "__main__":
+    multiprocessing.set_start_method('spawn') 
     main()
