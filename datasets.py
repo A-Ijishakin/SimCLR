@@ -9,7 +9,7 @@ import pandas as pd
 from data_aug.gaussian_blur import GaussianBlur     
 
 class CelebA_Dataset(torch.utils.data.Dataset):
-    def __init__(self, mode=0, classification=False, ffhq='', s=1, size=512, n_views=2):
+    def __init__(self, mode=0, classification=False, ffhq='', s=1, size=224, n_views=2):
         #filter for those in the training set
         self.datums = pd.read_csv('../celeba.csv')
         self.datums = self.datums[self.datums['set'] == mode]  
@@ -47,7 +47,7 @@ class CelebA_Dataset(torch.utils.data.Dataset):
         x = x.crop((left, top, right, bottom))
 
         # resize the image
-        x = x.resize((512, 512))      
+        x = x.resize((256, 256))      
                             
         imgs = [self.base_transform(x).to(torch.float32) for i in range(self.n_views)]
                     
