@@ -1,13 +1,14 @@
 import logging
 import os
 import sys
-
+import numpy as np 
 import torch
 import torch.nn.functional as F
 from torch.cuda.amp import GradScaler, autocast
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 from utils import save_config_file, accuracy, save_checkpoint
+import wandb 
 
 torch.manual_seed(0)
 
@@ -54,8 +55,16 @@ class SimCLR(object):
         logits = logits / self.args.temperature
         return logits, labels
 
-    def train(self, train_loader):
 
+
+    def train(self, train_loader):
+        length = len(train_loader) 
+        
+        best_loss = np.inf 
+        
+        wandb.init(project="HSpace-SAEs", entity="a-ijishakin",
+                        name='SimCLR')  
+        
         scaler = GradScaler(enabled=self.args.fp16_precision)
 
         # save config file
@@ -65,8 +74,10 @@ class SimCLR(object):
         logging.info(f"Start SimCLR training for {self.args.epochs} epochs.")
         logging.info(f"Training with gpu: {self.args.disable_cuda}.")
 
-        for epoch_counter in range(self.args.epochs):
-            for images, _ in tqdm(train_loader):
+        for epoch_counter in range(self.args.epochs): 
+            epoch_loss = 0 
+            for idx, data in tqdm(enumerate(train_loader)):
+                images = data['imgs'] 
                 images = torch.cat(images, dim=0)
 
                 images = images.to(self.args.device)
@@ -81,21 +92,30 @@ class SimCLR(object):
                 scaler.scale(loss).backward()
 
                 scaler.step(self.optimizer)
-                scaler.update()
-
-                if n_iter % self.args.log_every_n_steps == 0:
-                    top1, top5 = accuracy(logits, labels, topk=(1, 5))
-                    self.writer.add_scalar('loss', loss, global_step=n_iter)
-                    self.writer.add_scalar('acc/top1', top1[0], global_step=n_iter)
-                    self.writer.add_scalar('acc/top5', top5[0], global_step=n_iter)
-                    self.writer.add_scalar('learning_rate', self.scheduler.get_lr()[0], global_step=n_iter)
-
+                scaler.update() 
+                
+                wandb.log({'loss': 
+                    loss.item()}, 
+                          step= (epoch_counter * length) + idx)  
+                epoch_loss += loss.item()
+                
+                
                 n_iter += 1
+
+            if epoch_loss < best_loss: 
+                best_loss = epoch_loss 
+                save_checkpoint({
+                    'epoch': epoch_counter,
+                    'arch': self.args.arch,
+                    'state_dict': self.model.state_dict(),
+                    'optimizer': self.optimizer.state_dict(),
+                }, is_best=True, filename=os.path.join(self.writer.log_dir, 'checkpoint.pth.tar')) 
+            
 
             # warmup for the first 10 epochs
             if epoch_counter >= 10:
                 self.scheduler.step()
-            logging.debug(f"Epoch: {epoch_counter}\tLoss: {loss}\tTop1 accuracy: {top1[0]}")
+
 
         logging.info("Training has finished.")
         # save model checkpoints
