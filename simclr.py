@@ -74,47 +74,50 @@ class SimCLR(object):
         logging.info(f"Start SimCLR training for {self.args.epochs} epochs.")
         logging.info(f"Training with gpu: {self.args.disable_cuda}.")
 
+        
         for epoch_counter in range(self.args.epochs): 
             epoch_loss = 0 
-            for idx, data in tqdm(enumerate(train_loader)):
-                images = data['imgs'] 
-                images = torch.cat(images, dim=0)
+            with tqdm(total=len(train_loader), desc=f'Epoch {epoch_counter}') as pbar:
+                for idx, data in enumerate(train_loader):
+                    images = data['imgs'] 
+                    images = torch.cat(images, dim=0)
 
-                images = images.to(self.args.device)
+                    images = images.to(self.args.device)
 
-                with autocast(enabled=self.args.fp16_precision):
-                    features = self.model(images)
-                    logits, labels = self.info_nce_loss(features)
-                    loss = self.criterion(logits, labels)
+                    with autocast(enabled=self.args.fp16_precision):
+                        features = self.model(images)
+                        logits, labels = self.info_nce_loss(features)
+                        loss = self.criterion(logits, labels)
 
-                self.optimizer.zero_grad()
+                    self.optimizer.zero_grad()
 
-                scaler.scale(loss).backward()
+                    scaler.scale(loss).backward()
 
-                scaler.step(self.optimizer)
-                scaler.update() 
+                    scaler.step(self.optimizer)
+                    scaler.update() 
+                    
+                    wandb.log({'loss': 
+                        loss.item()}, 
+                            step= (epoch_counter * length) + idx)  
+                    epoch_loss += loss.item()
+                    
+                    
+                    n_iter += 1 
+                    pbar.update(1) 
+
+                if epoch_loss < best_loss: 
+                    best_loss = epoch_loss 
+                    save_checkpoint({
+                        'epoch': epoch_counter,
+                        'arch': self.args.arch,
+                        'state_dict': self.model.state_dict(),
+                        'optimizer': self.optimizer.state_dict(),
+                    }, is_best=True, filename=os.path.join(self.writer.log_dir, 'checkpoint.pth.tar')) 
                 
-                wandb.log({'loss': 
-                    loss.item()}, 
-                          step= (epoch_counter * length) + idx)  
-                epoch_loss += loss.item()
-                
-                
-                n_iter += 1
 
-            if epoch_loss < best_loss: 
-                best_loss = epoch_loss 
-                save_checkpoint({
-                    'epoch': epoch_counter,
-                    'arch': self.args.arch,
-                    'state_dict': self.model.state_dict(),
-                    'optimizer': self.optimizer.state_dict(),
-                }, is_best=True, filename=os.path.join(self.writer.log_dir, 'checkpoint.pth.tar')) 
-            
-
-            # warmup for the first 10 epochs
-            if epoch_counter >= 10:
-                self.scheduler.step()
+                # warmup for the first 10 epochs
+                if epoch_counter >= 10:
+                    self.scheduler.step()
 
 
         logging.info("Training has finished.")
