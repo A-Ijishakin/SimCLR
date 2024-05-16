@@ -75,7 +75,7 @@ def main():
     train_loader = torch.utils.data.DataLoader(CelebA_Dataset(mode=0), batch_size=args.batch_size, shuffle=True,
         pin_memory=True, drop_last=True, 
         
-                        num_workers=args.num_workers,         
+                        num_workers=args.workers,         
                         # persistent_workers=True,
                         # prefetch_factor=4, 
         
