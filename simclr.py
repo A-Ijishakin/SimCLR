@@ -55,7 +55,7 @@ class SimCLR(object):
         logits = logits / self.args.temperature
         return logits, labels
 
-    def train(self, train_loader, load=False): 
+    def train(self, train_loader, load=False, epoch_start=0): 
         length = len(train_loader) 
         
         best_loss = np.inf 
