@@ -73,7 +73,9 @@ class SimCLR(object):
         logging.info(f"Training with gpu: {self.args.disable_cuda}.")
 
         if load:
-            self.model = torch.load('/home/rmapaij/sae_bench/SimCLR/model_best.pth.tar')['state_dict'] 
+            checkpoint = torch.load('/home/rmapaij/sae_bench/SimCLR/model_best.pth.tar')
+            # Load the state_dict into the model
+            self.model.load_state_dict(checkpoint['state_dict'])
         
         breakpoint()
         for epoch_counter in range(176, self.args.epochs): 
