@@ -5,7 +5,7 @@ from torchvision import models
 from data_aug.contrastive_learning_dataset import ContrastiveLearningDataset
 from models.resnet_simclr import ResNetSimCLR
 from simclr import SimCLR
-from datasets import CelebA_Dataset 
+from datasets import CelebA_Dataset, FFHQ_HDataset 
 import multiprocessing 
 
 
@@ -16,8 +16,6 @@ model_names = sorted(name for name in models.__dict__
 parser = argparse.ArgumentParser(description='PyTorch SimCLR')
 parser.add_argument('-data', metavar='DIR', default='./datasets',
                     help='path to dataset')
-parser.add_argument('-dataset-name', default='stl10',
-                    help='dataset name', choices=['stl10', 'cifar10'])
 parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet18',
                     choices=model_names,
                     help='model architecture: ' +
@@ -54,7 +52,8 @@ parser.add_argument('--n-views', default=2, type=int, metavar='N',
                     help='Number of views for contrastive learning training.')
 parser.add_argument('--gpu-index', default=0, type=int, help='Gpu index.')
 parser.add_argument('--device-num', default=0, type=int, help='Device number.')  
-parser.add_argument('--load', default=False, type=bool) 
+parser.add_argument('--load', default=False, type=bool)  
+parser.add_argument('--dataset', default='celeba', type=str) 
 
 def main():
     args = parser.parse_args()
@@ -73,7 +72,13 @@ def main():
     # train_dataset = dataset.get_dataset(args.dataset_name, args.n_views) 
 
     
-    train_loader = torch.utils.data.DataLoader(CelebA_Dataset(mode=0), batch_size=args.batch_size, shuffle=True,
+    if args.dataset == 'celeba': 
+        dataset = CelebA_Dataset(mode=0) 
+    else:
+        dataset = FFHQ_HDataset()
+
+    
+    train_loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, shuffle=True,
         pin_memory=True, drop_last=True, 
         
                         num_workers=args.workers,         

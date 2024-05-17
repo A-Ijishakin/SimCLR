@@ -56,18 +56,35 @@ class CelebA_Dataset(torch.utils.data.Dataset):
                 'index' : idx, 'path': path, 'labels': labels}   
             
     
-    
-    
-# class FFHQ_HDataset(torch.utils.data.Dataset):
-#     def __init__(self):
-#         self.base = '/home/rmapaij/HSpace-SAEs/datasets/FFHQ/h_seven/*' 
-#         self.latents = glob(self.base) 
+class FFHQ_HDataset(torch.utils.data.Dataset):
+    def __init__(self, s=1, size=224, n_views=2):
+        self.base = '/home/rmapaij/HSpace-SAEs/datasets/FFHQ/images/*'
+        self.images = glob(self.base) 
         
-#     def __len__(self): 
-#         return len(self.latents) - 1 
-    
-#     def __getitem__(self, idx):
-#         h = torch.load(self.latents[idx], map_location='cpu', mmap = 'r').clone().detach() 
-#         h.requires_grad = False
         
-#         return {'h': h, 'id' : idx}  
+        color_jitter = tfs.ColorJitter(0.8 * s, 0.8 * s, 0.8 * s, 0.2 * s)
+        self.base_transform = tfs.Compose([tfs.RandomResizedCrop(size=size),
+                                              tfs.RandomHorizontalFlip(),
+                                              tfs.RandomApply([color_jitter], p=0.8),
+                                              tfs.RandomGrayscale(p=0.2),
+                                              GaussianBlur(kernel_size=int(0.1 * size)),
+                                              tfs.ToTensor()])
+        self.n_views = n_views 
+        
+        
+        
+    def __len__(self): 
+        return len(self.latents) - 1 
+    
+    def __getitem__(self, idx):
+        path = self.images[idx] 
+        
+        x = Image.open(path) 
+
+        # resize the image
+        x = x.resize((256, 256))      
+                            
+        imgs = [self.base_transform(x).to(torch.float32) for i in range(self.n_views)]
+        
+        return {'imgs':imgs,  
+                'index' : idx, 'path': path}   
