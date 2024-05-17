@@ -74,7 +74,7 @@ class FFHQ_HDataset(torch.utils.data.Dataset):
         
         
     def __len__(self): 
-        return len(self.latents) - 1 
+        return len(self.images) - 1 
     
     def __getitem__(self, idx):
         path = self.images[idx] 
