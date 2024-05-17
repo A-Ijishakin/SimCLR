@@ -53,7 +53,8 @@ parser.add_argument('--temperature', default=0.07, type=float,
 parser.add_argument('--n-views', default=2, type=int, metavar='N',
                     help='Number of views for contrastive learning training.')
 parser.add_argument('--gpu-index', default=0, type=int, help='Gpu index.')
-parser.add_argument('--device-num', default=0, type=int, help='Device number.') 
+parser.add_argument('--device-num', default=0, type=int, help='Device number.')  
+parser.add_argument('--load', default=False, type=bool) 
 
 def main():
     args = parser.parse_args()
@@ -91,7 +92,7 @@ def main():
     #  It’s a no-op if the 'gpu_index' argument is a negative integer or None.
     with torch.cuda.device(args.gpu_index):
         simclr = SimCLR(model=model, optimizer=optimizer, scheduler=scheduler, args=args)
-        simclr.train(train_loader)
+        simclr.train(train_loader, load=args.load)
 
 if __name__ == "__main__":
     # multiprocessing.set_start_method('spawn') 

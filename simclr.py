@@ -55,9 +55,7 @@ class SimCLR(object):
         logits = logits / self.args.temperature
         return logits, labels
 
-
-
-    def train(self, train_loader):
+    def train(self, train_loader, load=False): 
         length = len(train_loader) 
         
         best_loss = np.inf 
@@ -74,8 +72,10 @@ class SimCLR(object):
         logging.info(f"Start SimCLR training for {self.args.epochs} epochs.")
         logging.info(f"Training with gpu: {self.args.disable_cuda}.")
 
+        if load:
+            self.model = torch.load('/home/rmapaij/sae_bench/SimCLR/model_best.pth.tar')['state_dict'] 
         
-        for epoch_counter in range(self.args.epochs): 
+        for epoch_counter in range(176, self.args.epochs): 
             epoch_loss = 0 
             with tqdm(total=len(train_loader), desc=f'Epoch {epoch_counter}') as pbar:
                 for idx, data in enumerate(train_loader):
@@ -118,7 +118,6 @@ class SimCLR(object):
                 # warmup for the first 10 epochs
                 if epoch_counter >= 10:
                     self.scheduler.step()
-
 
         logging.info("Training has finished.")
         # save model checkpoints
