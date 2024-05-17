@@ -55,7 +55,7 @@ class SimCLR(object):
         logits = logits / self.args.temperature
         return logits, labels
 
-    def train(self, train_loader, load=False, epoch_start=0): 
+    def train(self, train_loader, load=False, epoch_start=0, dataset=None): 
         length = len(train_loader) 
         
         best_loss = np.inf 
@@ -115,7 +115,7 @@ class SimCLR(object):
                         'arch': self.args.arch,
                         'state_dict': self.model.state_dict(),
                         'optimizer': self.optimizer.state_dict(),
-                    }, is_best=True, filename=os.path.join(self.writer.log_dir, 'checkpoint.pth.tar')) 
+                    }, is_best=True, filename=os.path.join(self.writer.log_dir, f'checkpoint-{dataset}.pth.tar')) 
                 
 
                 # warmup for the first 10 epochs
@@ -124,7 +124,7 @@ class SimCLR(object):
 
         logging.info("Training has finished.")
         # save model checkpoints
-        checkpoint_name = 'checkpoint_{:04d}.pth.tar'.format(self.args.epochs)
+        checkpoint_name = 'checkpoint_{:04d}_{}.pth.tar'.format(self.args.epochs, dataset)
         save_checkpoint({
             'epoch': self.args.epochs,
             'arch': self.args.arch,

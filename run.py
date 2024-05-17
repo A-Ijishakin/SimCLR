@@ -97,7 +97,7 @@ def main():
     #  It’s a no-op if the 'gpu_index' argument is a negative integer or None.
     with torch.cuda.device(args.gpu_index):
         simclr = SimCLR(model=model, optimizer=optimizer, scheduler=scheduler, args=args)
-        simclr.train(train_loader, load=args.load)
+        simclr.train(train_loader, load=args.load, dataset=args.dataset)
 
 if __name__ == "__main__":
     # multiprocessing.set_start_method('spawn') 
