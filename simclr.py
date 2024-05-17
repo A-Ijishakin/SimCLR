@@ -75,6 +75,7 @@ class SimCLR(object):
         if load:
             self.model = torch.load('/home/rmapaij/sae_bench/SimCLR/model_best.pth.tar')['state_dict'] 
         
+        breakpoint()
         for epoch_counter in range(176, self.args.epochs): 
             epoch_loss = 0 
             with tqdm(total=len(train_loader), desc=f'Epoch {epoch_counter}') as pbar:
