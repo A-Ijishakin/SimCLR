@@ -72,7 +72,7 @@ class EvalCeleba_Test():
                 epoch_loss = 0 
                 classifier.train()
                 for index, batch in enumerate(train_loader):
-                    image, labels = batch['img'].to(self.args.device), batch['labels'].to(self.args.device)  
+                    image, labels = batch['imgs'].to(self.args.device), batch['labels'].to(self.args.device)  
                     latent = self.encoder(image) 
                     logits = classifier(latent)   
                     # loss = loss_fn(logits, labels) 
