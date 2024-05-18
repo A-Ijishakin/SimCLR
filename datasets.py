@@ -9,7 +9,7 @@ import pandas as pd
 from data_aug.gaussian_blur import GaussianBlur     
 
 class CelebA_Dataset(torch.utils.data.Dataset):
-    def __init__(self, mode=0, classification=False, ffhq='', s=1, size=224, n_views=2):
+    def __init__(self, mode=0, classification=False, ffhq='', s=1, size=224, n_views=2, train=True):
         #filter for those in the training set
         self.datums = pd.read_csv('../celeba.csv')
         self.datums = self.datums[self.datums['set'] == mode]  
@@ -17,13 +17,21 @@ class CelebA_Dataset(torch.utils.data.Dataset):
         #instantiate the base directory 
         self.base = '../img_align_celeba' 
         
-        color_jitter = tfs.ColorJitter(0.8 * s, 0.8 * s, 0.8 * s, 0.2 * s)
-        self.base_transform = tfs.Compose([tfs.RandomResizedCrop(size=size),
-                                              tfs.RandomHorizontalFlip(),
-                                              tfs.RandomApply([color_jitter], p=0.8),
-                                              tfs.RandomGrayscale(p=0.2),
-                                              GaussianBlur(kernel_size=int(0.1 * size)),
-                                              tfs.ToTensor()])
+        color_jitter = tfs.ColorJitter(0.8 * s, 0.8 * s, 0.8 * s, 0.2 * s) 
+        
+        self.train = train 
+        
+        if train:
+            self.base_transform = tfs.Compose([tfs.RandomResizedCrop(size=size),
+                                                tfs.RandomHorizontalFlip(),
+                                                tfs.RandomApply([color_jitter], p=0.8),
+                                                tfs.RandomGrayscale(p=0.2),
+                                                GaussianBlur(kernel_size=int(0.1 * size)),
+                                                tfs.ToTensor()]) 
+            
+        else:
+            self.base_transform = tfs.Compose([tfs.CenterCrop((size, size)), 
+                                                tfs.ToTensor()]) 
         self.n_views = n_views 
     def __len__(self): 
         return len(self.datums) - 1 
@@ -48,10 +56,17 @@ class CelebA_Dataset(torch.utils.data.Dataset):
 
         # resize the image
         x = x.resize((256, 256))      
-                            
-        imgs = [self.base_transform(x).to(torch.float32) for i in range(self.n_views)]
-                    
+        
+        if self.train:                    
+            imgs = [self.base_transform(x).to(torch.float32) for i in range(self.n_views)]
+        
+        else:
+            imgs = self.base_transform(x).to(torch.float32) 
+        
         labels = torch.tensor(self.datums.iloc[idx].drop(['id', 'set']).values.astype(float))
+        
+        
+        
         return {'imgs':imgs,  
                 'index' : idx, 'path': path, 'labels': labels}   
             

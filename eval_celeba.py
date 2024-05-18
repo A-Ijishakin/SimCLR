@@ -42,7 +42,7 @@ class EvalCeleba_Test():
     def train(self):
 
         
-        train_loader = DataLoader(dataset = CelebA_Dataset(mode=0) , batch_size=self.args.batch_size, 
+        train_loader = DataLoader(dataset = CelebA_Dataset(mode=0, train=False) , batch_size=self.args.batch_size, 
                                 shuffle=True, 
                                 num_workers=8, 
                                 persistent_workers=True) 
@@ -201,7 +201,7 @@ class EvalCeleba_Test():
 
 
     def eval_accuracy(self, mode=2, batch_size=128):
-        test_loader =  DataLoader(dataset = CelebA_Dataset(mode=mode) , batch_size=batch_size, 
+        test_loader =  DataLoader(dataset = CelebA_Dataset(mode=mode, train=False) , batch_size=batch_size, 
                                 shuffle=False, 
                                 num_workers=8, 
                                 persistent_workers=True)  
