@@ -10,7 +10,7 @@ from metric import MultiTaskLoss
 from tqdm import tqdm 
 from torch.utils.data import DataLoader 
 import os 
-from simclr import ResNetSimCLR 
+from models.resnet_simclr import ResNetSimCLR 
 import argparse
 from sklearn.metrics import average_precision_score, accuracy_score, precision_score, recall_score, f1_score, roc_auc_score  
 
