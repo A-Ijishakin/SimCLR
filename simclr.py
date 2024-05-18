@@ -115,7 +115,7 @@ class SimCLR(object):
                         'arch': self.args.arch,
                         'state_dict': self.model.state_dict(),
                         'optimizer': self.optimizer.state_dict(),
-                    }, is_best=True, filename=os.path.join(self.writer.log_dir, f'checkpoint-{dataset}.pth.tar')) 
+                    }, is_best=True,  dataset=dataset, filename=os.path.join(self.writer.log_dir, f'checkpoint-{dataset}.pth.tar')) 
                 
 
                 # warmup for the first 10 epochs
