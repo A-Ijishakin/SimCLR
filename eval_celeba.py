@@ -177,7 +177,7 @@ class EvalCeleba_Test():
     def evaluation_loop(self, eval_loader, classifier, y_gt, y_pred, pbar=None, lbar=None, mean=None, std=None, 
                         mask=None):
         for batch in eval_loader: 
-            image, labels = batch['img'].to(self.args.device), batch['labels'].to(self.args.device)  
+            image, labels = batch['imgs'].to(self.args.device), batch['labels'].to(self.args.device)  
             latent = self.encoder(image) 
             predictions = classifier(latent)    
             
@@ -217,5 +217,5 @@ class EvalCeleba_Test():
 
 if __name__ == '__main__':
     multiprocessing.set_start_method('spawn')  
-    EvalCeleba_Test(args=args).train()  
+    # EvalCeleba_Test(args=args).train()  
     EvalCeleba_Test(args=args).eval_accuracy() 
