@@ -25,7 +25,7 @@ args = parser.parse_args()
 class EvalCeleba_Test():
     def __init__(self, args):
         self.args = args 
-        checkpoint = torch.load('/home/rmapaij/sae_bench/SimCLR/model_best.pth.tar')
+        checkpoint = torch.load('/home/rmapaij/sae_bench/SimCLR/model_best-celeba.pth.tar')
             # Load the state_dict into the model
         
         
@@ -217,5 +217,5 @@ class EvalCeleba_Test():
 
 if __name__ == '__main__':
     multiprocessing.set_start_method('spawn')  
-    # EvalCeleba_Test(args=args).train()  
+    EvalCeleba_Test(args=args).train()  
     EvalCeleba_Test(args=args).eval_accuracy() 
